@@ -1,0 +1,89 @@
+---
+title: "Model draft definition"
+author: "Lorenzo Menichetti"
+date: "1/10/2023"
+output:
+  tufte::tufte_html: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{css, echo=FALSE}
+ td{font-size: 10px;}
+```
+# Model definitions
+
+The model components are:
+<ol>
+  <li>The decomposition model</li>
+  <li>The two porosity functions, which are variables in the decomposition model</li>
+  <li>Accessory functions to calculate the parameters for the porosity functions</li>
+</ol>
+
+
+## Decomposition model
+The decomposition model is a compartmental model considering four components, two pools (Young and Old) for the mesopore fraction and two for the micropore fraction
+
+\begin{equation}
+    \begin{cases}
+      \frac{dM_{Y_{(mes)}}}{dt} = I_m + \left( \frac{\phi_{mes}}{\phi_{mes}+\phi_{mic}}\right) \cdot I_r - k_Y \cdot M_{Y_{(mes)}}+ T_Y \\
+      
+      \frac{dM_{O_{(mes)}}}{dt} = \left( \epsilon \cdot k_Y \cdot M_{Y_{(mes)}} \right) - \left( (1- \epsilon) \cdot k_O \cdot M_{O_{(mes)}} \right) + T_O\\
+      
+      \frac{dM_{Y_{(mic)}}}{dt} = \left( \frac{\phi_{mes}}{\phi_{mes}+\phi_{mic}}\right) \cdot I_r - k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}}+ T_Y \\
+      
+      \frac{dM_{O_{(mic)}}}{dt} = \left( \epsilon \cdot k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}} \right) - \left( (1- \epsilon) \cdot k_O \cdot F_{prot} \cdot M_{O_{(mes)}} \right) + T_O
+    \end{cases}\
+\end{equation}
+
+The model has a feedback mechanism at the level of porosities $\phi_n$, so the system is instead:
+
+\begin{equation}
+    \begin{cases}
+      \frac{dM_{Y_{(mes)}}}{dt} = I_m + \left( \frac{\phi_{mes}(t)}{\phi_{mes}(t)+\phi_{mic}(t)}\right) \cdot I_r - k_Y \cdot M_{Y_{(mes)}}+ T_Y \\
+      
+      \frac{dM_{O_{(mes)}}}{dt} = \left( \epsilon \cdot k_Y \cdot M_{Y_{(mes)}} \right) - \left( (1- \epsilon) \cdot k_O \cdot M_{O_{(mes)}} \right) + T_O\\
+      
+      \frac{dM_{Y_{(mic)}}}{dt} = \left( \frac{\phi_{mes}(t)}{\phi_{mes}(t)+\phi_{mic}(t)}\right) \cdot I_r - k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}}+ T_Y \\
+      
+      \frac{dM_{O_{(mic)}}}{dt} = \left( \epsilon \cdot k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}} \right) - \left( (1- \epsilon) \cdot k_O \cdot F_{prot} \cdot M_{O_{(mes)}} \right) + T_O
+    \end{cases}\
+\end{equation}
+
+Where it appears clear that the two porosity terms, $\phi_{mes} = f(M_{Y_{(mes)}}, M_{O_{(mes)}},M_{Y_{(mic)}}, M_{O_{(mic)}})$ and $\phi_{mic} = f(M_{Y_{(mic)}}, M_{O_{(mic)}})$, are dependent on the variation of the different C pools and everything is variable over time, introducing a nonlinearity in the system and defining the biggest peculiarity of this model.
+
+### Climatic scaling of decomposition
+The climatic scaling of decomposition can be introduced in the model as in the ICBM model from which this model is derived, with a multiplier oscillating around 1 (which is the standard climate in Ultuna, where the model was developed) that multiplies the two kinetics $k_Y$ and $k_O$. The calculation of this term, called $r_e$, is already developed (https://github.com/ilmenichetti/reclim), but adding this scaling can require a recalibration of the model on multiple sites. 
+
+## Porosity variation functions
+We need to define the functions of variation of the two porosities considered, mesopores $\phi_{mes}$ and micropores $\phi_{mic}$. These depends on some external constants, and ultimately on the variation of the organic C pools.
+
+### Microporosity function
+The microporosity depends on the variation of the organic matter associated with micropores, $M_{Y_{(mic)}}$ and $M_{O_{(mic)}}$, plus some additional constants:
+
+$$ \phi_{mic} = \frac{\left[ f_{agg} \left(  \frac{M_{Y_{mic}}+ M_{O_{mic}}}{ \gamma_o} \right)\right] + (F_{text_{mic}} \Delta_z \phi_{min})}{\Delta_z}$$ (eq. 24)
+Where $\Delta_z$ is the depth considered, $F_{text_{mic}}$ is the proportion of the textural pore spaces that comprises micropores and $f_{agg}$ is an aggregation factor defined as the slope of the linear relationship assumed between the volume of aggregation pore spaces and the volume of organic matter. The constant  $F_{text_{mic}}$ is calculated according to what specified in the section [Textural pore space function] while the constant $f_{agg}$ is calculated according to  what specified in the section [Porosity slope calculation]. $\gamma_o$ is the density of organic matter (kg m$^{-3}$)
+
+### Mesopore function
+The mesopore porosity function is a result of micropore and matrix porosities:
+$$ \phi_{mes} = \phi_{mat}-\phi_{mic} $$ (eq. 25)
+Matrix porosity depends on all the organic pools plus additional constants:
+$$\phi_{mat} = \frac{\left[ f_{agg} \frac{M_{s_{0}}}{ \gamma_o} \right] + \Delta_z \phi_{min})}{\Delta_z}$$
+The variable $M_{s_{0}}$ is the sum of all the organic matter pools:
+$$M_{s_{0}} = M_{Y_{(mes)}} + M_{O_{(mic)}} + M_{Y_{(mic)}} + M_{O_{(mic)}}$$
+
+## Textural pore space function
+$$F_{text_{mic}} = $$^[Katha, you write that "It should be feasible to estimate Ftext(mic) from data on soil texture, since pore and particle size distributions are similar in the absence of structural pores". How can we do that?]
+
+## Porosity slope calculation
+This is a linear regression so we can define it as:
+$$f_{agg} = (y2-y1)/(x2-x1)$$
+Where $x_n$ and $y_n$ are the coordinates ^[Katha, what are the coordinates of the linear regression here? You describe them as just one value, volume, but for a linear regression we need a two-dimensional space] of the volume of the aggregation pore space $V_{agg}$ and the volume of organic matter. $V_{s_o}$.
+
+## Volume of pore space and organic matter calculation
+
+$$V_{agg} =$$
+
+$$V_{s_o} =$$.
