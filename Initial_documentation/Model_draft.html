@@ -81,6 +81,28 @@ The two porosity functions, which are variables in the decomposition model
 Accessory functions to calculate the parameters for the porosity functions
 </li>
 </ol>
+<p>The decomposition model can be implemented by wrapping its differential form into a solver like <code>deSolve</code>, but since the model is nonlinear its solution vary at each time step (which corresponds to a variation of the porosity terms, see section <a href="#decomposition-model">Decomposition model</a>). <strong>This requires to run the ODE solver iteratively for each step</strong>, and will add computational burden (one or two orders of magnitude depending on the time steps required).</p>
+<p>The other functions, needed to calculate the porosity parameters at each time step, are already integrated over time and can be used directly. To keep the structure of the package clean each function will be implemented separately and the connected in a hyerarchical structure.</p>
+<ul>
+<li>Package
+<ul>
+<li>Decomposition model function
+<ul>
+<li>Differential model equations</li>
+</ul></li>
+<li>Climate scaling function</li>
+<li>Micro-porosity functions</li>
+<li>Meso-porosity functions
+<ul>
+<li>Textural pore space function</li>
+<li>Porosity slope function
+<ul>
+<li>Pore space volume function</li>
+<li>Organic matter volume function</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
 <p>All references to equations numbere that follows refer to the original paper, Meurer et al., 2020.</p>
 <div id="decomposition-model" class="section level2">
 <h2>Decomposition model</h2>

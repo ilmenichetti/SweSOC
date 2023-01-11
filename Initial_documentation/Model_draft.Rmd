@@ -20,7 +20,22 @@ The model components are:
   <li>The decomposition model</li>
   <li>The two porosity functions, which are variables in the decomposition model</li>
   <li>Accessory functions to calculate the parameters for the porosity functions</li>
-</ol>
+</ol>  
+
+The decomposition model can be implemented by wrapping its differential form into a solver like `deSolve `, but since the model is nonlinear its solution vary at each time step (which corresponds to a variation of the porosity terms, see section [Decomposition model]). **This requires to run the ODE solver iteratively for each step**, and will add computational burden (one or two orders of magnitude depending on the time steps required).  
+
+The other functions, needed to calculate the porosity parameters at each time step, are already integrated over time and can be used directly. To keep the structure of the package clean each function will be implemented separately and the connected in a hyerarchical structure.  
+
+* Package
+    * Decomposition model function
+        * Differential model equations
+    * Climate scaling function
+    * Micro-porosity functions
+    * Meso-porosity functions
+        * Textural pore space function
+        * Porosity slope function
+            - Pore space volume function
+            - Organic matter volume function
 
 All references to equations numbere that follows refer to the original paper, Meurer et al., 2020.
 
