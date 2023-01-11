@@ -22,9 +22,10 @@ The model components are:
   <li>Accessory functions to calculate the parameters for the porosity functions</li>
 </ol>
 
+All references to equations numbere that follows refer to the original paper, Meurer et al., 2020.
 
 ## Decomposition model
-The decomposition model is a compartmental model considering four components, two pools (Young and Old) for the mesopore fraction and two for the micropore fraction
+The decomposition model is a compartmental model considering four components, two pools (Young and Old) for the mesopore fraction and two for the micropore fraction (equations 1 to 4):
 
 \begin{equation}
     \begin{cases}
@@ -55,7 +56,7 @@ The model has a feedback mechanism at the level of porosities $\phi_n$, so the s
 Where it appears clear that the two porosity terms, $\phi_{mes} = f(M_{Y_{(mes)}}, M_{O_{(mes)}},M_{Y_{(mic)}}, M_{O_{(mic)}})$ and $\phi_{mic} = f(M_{Y_{(mic)}}, M_{O_{(mic)}})$, are dependent on the variation of the different C pools and everything is variable over time, introducing a nonlinearity in the system and defining the biggest peculiarity of this model.
 
 ### Climatic scaling of decomposition
-The climatic scaling of decomposition can be introduced in the model as in the ICBM model from which this model is derived, with a multiplier oscillating around 1 (which is the standard climate in Ultuna, where the model was developed) that multiplies the two kinetics $k_Y$ and $k_O$. The calculation of this term, called $r_e$, is already developed (https://github.com/ilmenichetti/reclim), but adding this scaling can require a recalibration of the model on multiple sites. 
+The climatic scaling of decomposition can be introduced in the model as in the ICBM model from which this model is derived, with a multiplier oscillating around 1 (which is the standard climate in Ultuna, where the model was developed) that multiplies the two kinetics $k_Y$ and $k_O$. The calculation of this term, called $r_e$, is already developed (https://github.com/ilmenichetti/reclim), but **adding this scaling can require a recalibration of the model on multiple sites**. The model present nonlinear interactions and it is unlikely that this has no effect on the calibration, and while it would work in Ultuna (where $r_e$ is by defintion 1) this might make the model predictions unreliable when extrapolating on new sites. This is because the $r_e$ scaling has been developed and tested on the standard ICBM model, which does not behave in the same way, and extending it to another model requires at least a validation.
 
 ## Porosity variation functions
 We need to define the functions of variation of the two porosities considered, mesopores $\phi_{mes}$ and micropores $\phi_{mic}$. These depends on some external constants, and ultimately on the variation of the organic C pools.
@@ -70,12 +71,13 @@ Where $\Delta_z$ is the depth considered, $F_{text_{mic}}$ is the proportion of 
 The mesopore porosity function is a result of micropore and matrix porosities:
 $$ \phi_{mes} = \phi_{mat}-\phi_{mic} $$ (eq. 25)
 Matrix porosity depends on all the organic pools plus additional constants:
-$$\phi_{mat} = \frac{\left[ f_{agg} \frac{M_{s_{0}}}{ \gamma_o} \right] + \Delta_z \phi_{min})}{\Delta_z}$$
+$$\phi_{mat} = \frac{\left[ f_{agg} \frac{M_{s_{0}}}{ \gamma_o} \right] + \Delta_z \phi_{min})}{\Delta_z}$$ (eq. 13)
 The variable $M_{s_{0}}$ is the sum of all the organic matter pools:
-$$M_{s_{0}} = M_{Y_{(mes)}} + M_{O_{(mic)}} + M_{Y_{(mic)}} + M_{O_{(mic)}}$$
+$$M_{s_{0}} = M_{Y_{(mes)}} + M_{O_{(mic)}} + M_{Y_{(mic)}} + M_{O_{(mic)}}$$ (eq. 8)
 
 ## Textural pore space function
-$$F_{text_{mic}} = $$^[Katha, you write that "It should be feasible to estimate Ftext(mic) from data on soil texture, since pore and particle size distributions are similar in the absence of structural pores". How can we do that?]
+The textural pore space can be calculated from ^[Katha, you write that "It should be feasible to estimate Ftext(mic) from data on soil texture, since pore and particle size distributions are similar in the absence of structural pores". How can we do that?]
+$$F_{text_{mic}} = $$
 
 ## Porosity slope calculation
 This is a linear regression so we can define it as:
@@ -87,3 +89,8 @@ Where $x_n$ and $y_n$ are the coordinates ^[Katha, what are the coordinates of t
 $$V_{agg} =$$
 
 $$V_{s_o} =$$.
+
+
+# References
+Meurer, K.H.E., Chenu, C., Coucheney, E., Herrmann, A.M., Keller, T., Kätterer, T., Nimblad Svensson, D., Jarvis, N., 2020. Modelling dynamic interactions between soil structure and the storage and turnover of soil organic matter. Biogeosciences 17, 5025–5042. https://doi.org/10.5194/bg-17-5025-2020
+

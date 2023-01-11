@@ -81,9 +81,10 @@ The two porosity functions, which are variables in the decomposition model
 Accessory functions to calculate the parameters for the porosity functions
 </li>
 </ol>
+<p>All references to equations numbere that follows refer to the original paper, Meurer et al., 2020.</p>
 <div id="decomposition-model" class="section level2">
 <h2>Decomposition model</h2>
-<p>The decomposition model is a compartmental model considering four components, two pools (Young and Old) for the mesopore fraction and two for the micropore fraction</p>
+<p>The decomposition model is a compartmental model considering four components, two pools (Young and Old) for the mesopore fraction and two for the micropore fraction (equations 1 to 4):</p>
 <p><span class="math display">\[\begin{equation}
     \begin{cases}
       \frac{dM_{Y_{(mes)}}}{dt} = I_m + \left( \frac{\phi_{mes}}{\phi_{mes}+\phi_{mic}}\right) \cdot I_r - k_Y \cdot M_{Y_{(mes)}}+ T_Y \\
@@ -110,7 +111,7 @@ Accessory functions to calculate the parameters for the porosity functions
 <p>Where it appears clear that the two porosity terms, <span class="math inline">\(\phi_{mes} = f(M_{Y_{(mes)}}, M_{O_{(mes)}},M_{Y_{(mic)}}, M_{O_{(mic)}})\)</span> and <span class="math inline">\(\phi_{mic} = f(M_{Y_{(mic)}}, M_{O_{(mic)}})\)</span>, are dependent on the variation of the different C pools and everything is variable over time, introducing a nonlinearity in the system and defining the biggest peculiarity of this model.</p>
 <div id="climatic-scaling-of-decomposition" class="section level3">
 <h3>Climatic scaling of decomposition</h3>
-<p>The climatic scaling of decomposition can be introduced in the model as in the ICBM model from which this model is derived, with a multiplier oscillating around 1 (which is the standard climate in Ultuna, where the model was developed) that multiplies the two kinetics <span class="math inline">\(k_Y\)</span> and <span class="math inline">\(k_O\)</span>. The calculation of this term, called <span class="math inline">\(r_e\)</span>, is already developed (<a href="https://github.com/ilmenichetti/reclim" class="uri">https://github.com/ilmenichetti/reclim</a>), but adding this scaling can require a recalibration of the model on multiple sites.</p>
+<p>The climatic scaling of decomposition can be introduced in the model as in the ICBM model from which this model is derived, with a multiplier oscillating around 1 (which is the standard climate in Ultuna, where the model was developed) that multiplies the two kinetics <span class="math inline">\(k_Y\)</span> and <span class="math inline">\(k_O\)</span>. The calculation of this term, called <span class="math inline">\(r_e\)</span>, is already developed (<a href="https://github.com/ilmenichetti/reclim" class="uri">https://github.com/ilmenichetti/reclim</a>), but <strong>adding this scaling can require a recalibration of the model on multiple sites</strong>. The model present nonlinear interactions and it is unlikely that this has no effect on the calibration, and while it would work in Ultuna (where <span class="math inline">\(r_e\)</span> is by defintion 1) this might make the model predictions unreliable when extrapolating on new sites. This is because the <span class="math inline">\(r_e\)</span> scaling has been developed and tested on the standard ICBM model, which does not behave in the same way, and extending it to another model requires at least a validation.</p>
 </div>
 </div>
 <div id="porosity-variation-functions" class="section level2">
@@ -123,12 +124,12 @@ Accessory functions to calculate the parameters for the porosity functions
 </div>
 <div id="mesopore-function" class="section level3">
 <h3>Mesopore function</h3>
-<p>The mesopore porosity function is a result of micropore and matrix porosities: <span class="math display">\[ \phi_{mes} = \phi_{mat}-\phi_{mic} \]</span> (eq. 25) Matrix porosity depends on all the organic pools plus additional constants: <span class="math display">\[\phi_{mat} = \frac{\left[ f_{agg} \frac{M_{s_{0}}}{ \gamma_o} \right] + \Delta_z \phi_{min})}{\Delta_z}\]</span> The variable <span class="math inline">\(M_{s_{0}}\)</span> is the sum of all the organic matter pools: <span class="math display">\[M_{s_{0}} = M_{Y_{(mes)}} + M_{O_{(mic)}} + M_{Y_{(mic)}} + M_{O_{(mic)}}\]</span></p>
+<p>The mesopore porosity function is a result of micropore and matrix porosities: <span class="math display">\[ \phi_{mes} = \phi_{mat}-\phi_{mic} \]</span> (eq. 25) Matrix porosity depends on all the organic pools plus additional constants: <span class="math display">\[\phi_{mat} = \frac{\left[ f_{agg} \frac{M_{s_{0}}}{ \gamma_o} \right] + \Delta_z \phi_{min})}{\Delta_z}\]</span> (eq. 13) The variable <span class="math inline">\(M_{s_{0}}\)</span> is the sum of all the organic matter pools: <span class="math display">\[M_{s_{0}} = M_{Y_{(mes)}} + M_{O_{(mic)}} + M_{Y_{(mic)}} + M_{O_{(mic)}}\]</span> (eq. 8)</p>
 </div>
 </div>
 <div id="textural-pore-space-function" class="section level2">
 <h2>Textural pore space function</h2>
-<p><span class="math display">\[F_{text_{mic}} = \]</span><label for="tufte-sn-1" class="margin-toggle sidenote-number">1</label><input type="checkbox" id="tufte-sn-1" class="margin-toggle"><span class="sidenote"><span class="sidenote-number">1</span> Katha, you write that “It should be feasible to estimate Ftext(mic) from data on soil texture, since pore and particle size distributions are similar in the absence of structural pores”. How can we do that?</span></p>
+<p>The textural pore space can be calculated from <label for="tufte-sn-1" class="margin-toggle sidenote-number">1</label><input type="checkbox" id="tufte-sn-1" class="margin-toggle"><span class="sidenote"><span class="sidenote-number">1</span> Katha, you write that “It should be feasible to estimate Ftext(mic) from data on soil texture, since pore and particle size distributions are similar in the absence of structural pores”. How can we do that?</span> <span class="math display">\[F_{text_{mic}} = \]</span></p>
 </div>
 <div id="porosity-slope-calculation" class="section level2">
 <h2>Porosity slope calculation</h2>
@@ -139,6 +140,10 @@ Accessory functions to calculate the parameters for the porosity functions
 <p><span class="math display">\[V_{agg} =\]</span></p>
 <p><span class="math display">\[V_{s_o} =\]</span>.</p>
 </div>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<p>Meurer, K.H.E., Chenu, C., Coucheney, E., Herrmann, A.M., Keller, T., Kätterer, T., Nimblad Svensson, D., Jarvis, N., 2020. Modelling dynamic interactions between soil structure and the storage and turnover of soil organic matter. Biogeosciences 17, 5025–5042. <a href="https://doi.org/10.5194/bg-17-5025-2020" class="uri">https://doi.org/10.5194/bg-17-5025-2020</a></p>
 </div>
 
 
