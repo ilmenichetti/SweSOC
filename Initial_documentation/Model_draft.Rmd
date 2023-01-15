@@ -48,10 +48,10 @@ The decomposition model is a compartmental model considering four components, tw
       
       \frac{dM_{O_{(mes)}}}{dt} = \left( \epsilon \cdot k_Y \cdot M_{Y_{(mes)}} \right) - \left( (1- \epsilon) \cdot k_O \cdot M_{O_{(mes)}} \right) + T_O\\
       
-      \frac{dM_{Y_{(mic)}}}{dt} = \left( \frac{\phi_{mes}}{\phi_{mes}+\phi_{mic}}\right) \cdot I_r - k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}}+ T_Y \\
+      \frac{dM_{Y_{(mic)}}}{dt} = \left( \frac{\phi_{mic}}{\phi_{mes}+\phi_{mic}}\right) \cdot I_r - k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}}- T_Y \\
       
-      \frac{dM_{O_{(mic)}}}{dt} = \left( \epsilon \cdot k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}} \right) - \left( (1- \epsilon) \cdot k_O \cdot F_{prot} \cdot M_{O_{(mes)}} \right) + T_O
-    \end{cases}\
+      \frac{dM_{O_{(mic)}}}{dt} = \left( \epsilon \cdot k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}} \right) - \left( (1- \epsilon) \cdot k_O \cdot F_{prot} \cdot M_{O_{(mes)}} \right) - T_O
+    \end{cases}
 \end{equation}
 
 The model has a feedback mechanism at the level of porosities $\phi_n$, so the system is instead:
@@ -62,13 +62,82 @@ The model has a feedback mechanism at the level of porosities $\phi_n$, so the s
       
       \frac{dM_{O_{(mes)}}}{dt} = \left( \epsilon \cdot k_Y \cdot M_{Y_{(mes)}} \right) - \left( (1- \epsilon) \cdot k_O \cdot M_{O_{(mes)}} \right) + T_O\\
       
-      \frac{dM_{Y_{(mic)}}}{dt} = \left( \frac{\phi_{mes}(t)}{\phi_{mes}(t)+\phi_{mic}(t)}\right) \cdot I_r - k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}}+ T_Y \\
+      \frac{dM_{Y_{(mic)}}}{dt} = \left( \frac{\phi_{mic}(t)}{\phi_{mes}(t)+\phi_{mic}(t)}\right) \cdot I_r - k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}}- T_Y \\
       
-      \frac{dM_{O_{(mic)}}}{dt} = \left( \epsilon \cdot k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}} \right) - \left( (1- \epsilon) \cdot k_O \cdot F_{prot} \cdot M_{O_{(mes)}} \right) + T_O
-    \end{cases}\
+      \frac{dM_{O_{(mic)}}}{dt} = \left( \epsilon \cdot k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}} \right) - \left( (1- \epsilon) \cdot k_O \cdot F_{prot} \cdot M_{O_{(mes)}} \right) - T_O
+    \end{cases}
 \end{equation}
 
 Where it appears clear that the two porosity terms, $\phi_{mes} = f(M_{Y_{(mes)}}, M_{O_{(mes)}},M_{Y_{(mic)}}, M_{O_{(mic)}})$ and $\phi_{mic} = f(M_{Y_{(mic)}}, M_{O_{(mic)}})$, are dependent on the variation of the different C pools and everything is variable over time, introducing a nonlinearity in the system and defining the biggest peculiarity of this model.
+
+### Attempting to rewrite the model in matrix notation
+
+First we substitute the term $\left( \frac{\phi_{mes}(t)}{\phi_{mes}(t)+\phi_{mic}(t)}\right) = \varphi_{mes}$ and $\left( \frac{\phi_{mic}(t)}{\phi_{mes}(t)+\phi_{mic}(t)}\right) = \varphi_{mic}$
+
+\begin{equation}
+    \begin{cases}
+      \frac{dM_{Y_{(mes)}}}{dt} = I_m + \varphi_{mes} \cdot I_r - k_Y \cdot M_{Y_{(mes)}}+ T_Y \\
+      
+      \frac{dM_{O_{(mes)}}}{dt} = \left( \epsilon \cdot k_Y \cdot M_{Y_{(mes)}} \right) - \left( (1- \epsilon) \cdot k_O \cdot M_{O_{(mes)}} \right) + T_O\\
+      
+      \frac{dM_{Y_{(mic)}}}{dt} = \varphi_{mic} \cdot I_r - k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}}- T_Y \\
+      
+      \frac{dM_{O_{(mic)}}}{dt} = \left( \epsilon \cdot k_Y \cdot F_{prot} \cdot M_{Y_{(mes)}} \right) - \left( (1- \epsilon) \cdot k_O \cdot F_{prot} \cdot M_{O_{(mes)}} \right) - T_O
+    \end{cases}
+\end{equation}
+
+A generic matrix notation for the system could be defined as
+
+\begin{equation}
+
+I_m(t) + I_r(t) \cdot N(C,t) + A(t) \cdot P(t) \cdot C(t)
+
+\end{equation}
+
+Considering separately the inputs from roots and from aboveground.
+
+
+\begin{equation}
+
+\frac{dC}{dt}=\begin{bmatrix}
+              I_m\\
+              0\\
+              0\\
+              0\\
+              \end{bmatrix}+
+              \begin{bmatrix}
+              I_r\\
+              0\\
+              I_r\\
+              0\\
+              \end{bmatrix} \cdot
+               \begin{bmatrix}
+              \varphi_{mes} & 0 & 0 & 0\\
+              0 & 1 & 0 & 0\\
+              0 & 0 & \varphi_{mic} & 0\\
+              0 & 0 & 0 & 1\\
+              \end{bmatrix}+
+               \begin{bmatrix}
+              -k_y & \epsilon & 0 & 0\\
+              0 & -k_o & 0 & 0\\
+              T_Y & 0 & -k_y & \epsilon\\
+              0 & T_O & 0 & -k_o\\
+              \end{bmatrix} \cdot
+                 \begin{bmatrix}
+              1 & 0 & 0 & 0\\
+              0 & 1 & 0 & 0\\
+              0 & 0 & F_{prot} & 0\\
+              0 & 0 & 0 & F_{prot}\\
+              \end{bmatrix} \cdot
+               \begin{bmatrix}
+              M_{Y_{mes}}\\
+              M_{O_{mes}}\\
+              M_{Y_{mic}}\\
+              M_{O_{mic}}
+              \end{bmatrix}
+              
+
+\end{equation}
 
 ### Climatic scaling of decomposition
 The climatic scaling of decomposition can be introduced in the model as in the ICBM model from which this model is derived, with a multiplier oscillating around 1 (which is the standard climate in Ultuna, where the model was developed) that multiplies the two kinetics $k_Y$ and $k_O$. The calculation of this term, called $r_e$, is already developed (https://github.com/ilmenichetti/reclim), but **adding this scaling can require a recalibration of the model on multiple sites**. The model present nonlinear interactions and it is unlikely that this has no effect on the calibration, and while it would work in Ultuna (where $r_e$ is by defintion 1) this might make the model predictions unreliable when extrapolating on new sites. This is because the $r_e$ scaling has been developed and tested on the standard ICBM model, which does not behave in the same way, and extending it to another model requires at least a validation.
