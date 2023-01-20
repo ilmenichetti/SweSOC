@@ -1,0 +1,39 @@
+---
+title: "TwoPools nonlinearity in inputs"
+author: "Lorenzo Menichetti"
+date: "2023-01-18"
+output: html_document
+---
+
+
+# Equation
+
+Matrix notation of a simplified system could be defined as
+\begin{equation}
+\frac{dC}{dt}=I(t) \cdot N(C,t) + A(t) \cdot C(t)
+\end{equation}
+Inputs $I$ are modified by the term $theta$ which is a function of humified C ($C_O$).
+We consider only two pools for simplicity, $C_y$ and $C_o$. We adopt the notation of Jarvis and Meurer for the ICBM model (just a two-pools linear model), substituting $h$ with $\epsilon$.  
+
+Developing the matrices the model becomes:
+
+\begin{equation}
+\frac{dC}{dt}=\begin{bmatrix}
+              I\\
+              0
+              \end{bmatrix} \cdot
+               \begin{bmatrix}
+              \theta (C_o) & 0 \\
+              0 & 1 
+              \end{bmatrix}+
+               \begin{bmatrix}
+              -k_y & \epsilon\\
+              0 & -k_o
+              \end{bmatrix} \cdot
+               \begin{bmatrix}
+              C_y\\
+              C_o
+              \end{bmatrix}
+              
+
+\end{equation}
