@@ -89,16 +89,13 @@ First we substitute the term $\left( \frac{\phi_{mes}(t)}{\phi_{mes}(t)+\phi_{mi
 A generic matrix notation for the system could be defined as
 
 \begin{equation}
-
 I_m(t) + I_r(t) \cdot N(C,t) + A(t) \cdot P(t) \cdot C(t)
-
 \end{equation}
 
 Considering separately the inputs from roots and from aboveground.
 
 
 \begin{equation}
-
 \frac{dC}{dt}=\begin{bmatrix}
               I_m\\
               0\\
@@ -135,8 +132,6 @@ Considering separately the inputs from roots and from aboveground.
               M_{Y_{mic}}\\
               M_{O_{mic}}
               \end{bmatrix}
-              
-
 \end{equation}
 
 ### Climatic scaling of decomposition

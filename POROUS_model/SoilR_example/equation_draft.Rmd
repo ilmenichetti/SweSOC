@@ -2,7 +2,9 @@
 title: "TwoPools nonlinearity in inputs"
 author: "Lorenzo Menichetti"
 date: "2023-01-18"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 
@@ -34,6 +36,16 @@ Developing the matrices the model becomes:
               C_y\\
               C_o
               \end{bmatrix}
-              
-
 \end{equation}
+
+The nonlinearity defined by $\theta$ is a generic function of the old C pool content $C_o$, $\theta = f(C_o(t))$.
+
+
+# Draft parameter values
+
+We can start from the 1996 ICBM parameterization for the parameter values:
+$k_y=0.8$, $k_o=0.00605$ and $\eta=h=0.13$, ignoring the climatic scaling for the moment.  
+
+<div class="alert alert-info">
+  <strong>Note:</strong> the $\epsilon$ parameter for ICBM is dependent on input quality, this must be considered in the multimodel comparison also for all other models.
+</div>
