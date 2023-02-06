@@ -1,0 +1,197 @@
+---
+title: "Implementing models with nonlinear inputs in SoilR"
+author: "Carlos A. Sierra"
+date: "1/22/2023"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this example, we will implement a model with nonlinear inputs; i.e. a model in which the inputs of OM to soil depend on how much OM is already stored in the system. 
+
+## The model
+We will implement the following model
+\begin{equation}
+\frac{dC}{dt}=\begin{bmatrix}
+              \theta (C_o) & 0 \\
+              0 & 1 
+              \end{bmatrix} \cdot
+              \begin{bmatrix}
+              I_y\\
+              I_o
+              \end{bmatrix}
+              +
+               \begin{bmatrix}
+              -k_y & 0 \\
+              h \, k_y & -k_o
+              \end{bmatrix} \cdot
+               \begin{bmatrix}
+              C_y\\
+              C_o
+              \end{bmatrix}
+\end{equation}
+with $k_y=0.8$, $k_o=0.00605$ and $h=0.13$. Inputs to young and old pools will be assumed as $I_y=1.1$, $I_o=0.5$. The function $\theta(C_o)$ is a place holder for any arbitrary function, but for this example we will use
+\begin{equation}
+\theta = \frac{C_o}{0.5+C_o}
+\end{equation}
+
+In addition, we need initial values for the two pools. We assume $C_y(0) =1, \ C_o(0) = 10$.
+
+This model can also be expressed as the sum of influxes, outfluxes, and internal fluxes for each pool. 
+In standard notation, the model is expressed as
+\begin{equation}
+ \begin{aligned}
+ \frac{d C_y}{dt} &= I_y \frac{C_o}{0.5+C_o} - k_y C_y \\
+ \frac{d C_o}{dt} &= I_o + h k_y C_y - k_o C_o\\
+ \end{aligned}
+\end{equation}
+
+The influx to pool $C_y$ is the nonlinear term $I_y \frac{C_o}{0.5+C_o}$, and the influx to pool $C_o$ is the constant flux $I_o$. The outfluxes from each pool are $k_y C_y$ and $k_o C_o$, respectively. The internal flux only occurs from pool $C_y$ which acts as the source pool to the receiver pool $C_y$, and this internal flux is $h k_y C_y$.
+
+This representation by fluxes will be useful to implement the model in SoilR using the flux representation approch (instead of the matrix representation approach).
+
+## Implementation
+
+First, we load the SoilR package
+```{r}
+library(SoilR)
+```
+
+We will implement a function called `TwopoolNonlinearInput` that will call SoilR's internal functions to create a model by fluxes. 
+
+```{r}
+TwopoolNonlinearInput<-function(ky=0.8, ko=0.00605, h=0.13, Iy=1.1, Io=0.5){
+  time_symbol='t'
+  
+  ifs=SoilR:::InFluxList_by_PoolName(
+    c(
+      SoilR:::InFlux_by_PoolName(
+        destinationName='Cy',
+        func=function(t, Co){
+          Iy*(Co/(0.5*Co))
+        }
+      ),
+      SoilR:::InFlux_by_PoolName(
+        destinationName='Co',
+        func=function(t){
+          Io
+        }
+      )
+    )
+  )
+  ofs=SoilR:::OutFluxList_by_PoolName(
+    c(
+      SoilR:::OutFlux_by_PoolName(
+        sourceName='Cy',
+        func=function(Cy){
+          ky*Cy
+        }
+      )
+      ,
+      SoilR:::OutFlux_by_PoolName(
+        sourceName='Co',
+        func=function(Co){
+          ko*Co
+        }
+      )
+    )
+  )
+  intfs=SoilR:::InternalFluxList_by_PoolName(
+    list(
+      SoilR:::InternalFlux_by_PoolName(
+        sourceName='Cy',
+        destinationName='Co',
+        func=function(Cy){
+          h*ky*Cy
+        }
+      )
+      )
+    )
+
+  smod <- SoilR:::SymbolicModel_by_PoolNames(
+    in_fluxes=ifs,
+    internal_fluxes=intfs,
+    out_fluxes=ofs,
+    timeSymbol=time_symbol
+  )
+  smod
+}
+
+```
+
+There are a few important aspects to note in this function:
+
+1. The arguments of the function are the parameter values of the model.
+2. Influxes, outfluxes, and internal fluxes are lists that describe each of them. In turn, each flux is represented as a function, which can depend on time $t$ as in non-autonomous models, and can also depend on the concent of the pool, $C_y$ or $C_o$ for this example. 
+3. The function returns a SoilR object of class `SymbolicModel_by_PoolNames`. This is a type of SoilR model that is very flexible for implementing nonlinear models, and don't need a matrix representation. 
+
+The model created by this function can be visulized in terms of its structure. We create an instance of the model by calling the function and then simply call the function `plotPoolGraph`. 
+
+```{r}
+modelObject<-TwopoolNonlinearInput()
+plotPoolGraph(modelObject)
+```
+
+Notice that you can change parameter values by calling the `TwopoolNonlinearInput` function with different arguments. 
+
+## Prepare a model run
+Notice that the function we created simply creates the model, but we need additional information to run a simulation: (1) starting values for the two pools, (2) a time sequence where we want to obtain the solutions. In the following code, we create (1) and (2) and define a specific Model Run that contains all elements required to run simulations.
+
+```{r}
+iv<-c(Cy=1, Co=10)
+times<-seq(0,20,by=0.1)
+modrun0<-Model_by_PoolNames(smod=modelObject, times=times, initialValues=iv)
+
+```
+
+Now, we can obtain specific aspects of the solution from this model run. For example, we can obtain the pool contents with the function `getC` or the release fluxes (respiration) from the pools with the function `getReleaseFlux`.
+
+```{r}
+Ct0<-getC(modrun0)
+Rt0<-getReleaseFlux(modrun0)
+```
+
+We can plot the results
+
+```{r}
+par(mfrow=c(2,1), mar=c(4,4,0,1))
+matplot(times, Ct0, type="l", lty=1, col=1:2, xlab=" ", ylab="Pool contents", bty="n")
+legend("topleft", c("Cy", "Co"), lty=1, col=1:2, bty="n")
+matplot(times, Rt0,  type="l", lty=1, col=1:2, xlab="Time", ylab="Respiration", bty="n")
+```
+
+## Run multiple simulations
+Once the model function is defined, it's easy to run other simulations changing parameter values or initial conditions. 
+Let's assume we want to run a simulation with a value of $k_y = 0.1$ and $C_y =20$, and observe what happens to the total carbon stock in comparison with the previous simulation.
+
+```{r}
+modrun1<-Model_by_PoolNames(smod=TwopoolNonlinearInput(ky=0.1), times=times, initialValues=c(Cy=20, Co=10))
+Ct1<-getC(modrun1)
+
+plot(times, rowSums(Ct1), type="l", lty=1, col=3, ylim=c(0,50), xlab="Time", ylab="Total carbon stock", bty="n")
+lines(times, rowSums(Ct0), col=4)
+legend("topleft", c("Simulation with ky=0.8 and Cy=1", "Simulation with ky=0.1 and Cy=20"), lty=1, col=c(4,3), bty="n")
+```
+
+
+Because models in SoilR are functions, it is convinient to take advantage of the `lapply` or `mapply` functions of R to run multiple simulations in a simple way. 
+Let's test the effect of the parameter $h$ on respiration fluxes. We can create a vector of values of $h$ to test, and then run multiple model runs to obtain the respiration from pool $C_y$. 
+
+```{r}
+hs<-seq(0,1, by=0.2)
+
+modelList<-mapply(FUN=TwopoolNonlinearInput, h=hs)
+modelRunList<-lapply(modelList, FUN=Model_by_PoolNames, times=times, initialValues=iv)
+Rt_list<-lapply(modelRunList, FUN=getReleaseFlux)
+
+plot(times, Rt_list[[1]][,1], type="l", xlab="Time", ylab="Release from Cy pool")
+for(i in 1:length(Rt_list)){
+  lines(times, Rt_list[[i]][,1], col=i)
+}
+legend("topright", paste("h = ", hs), lty=1, col=1:6, bty="n")
+```
+
+
