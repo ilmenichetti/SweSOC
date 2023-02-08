@@ -195,3 +195,38 @@ legend("topright", paste("h = ", hs), lty=1, col=1:6, bty="n")
 ```
 
 
+
+## Complicating the model
+Bring in the double inputs
+
+\begin{equation}
+\frac{dC}{dt}=  \begin{bmatrix}
+              I_{s_y}\\
+              I_{s_o}
+              \end{bmatrix}+
+              \begin{bmatrix}
+              \theta (C_o) & 0 \\
+              0 & 1 
+              \end{bmatrix} \cdot
+              \begin{bmatrix}
+              I_{r_y}\\
+              I_{r_o}
+              \end{bmatrix}
+              +
+               \begin{bmatrix}
+              -k_y & 0 \\
+              h \, k_y & -k_o
+              \end{bmatrix} \cdot
+               \begin{bmatrix}
+              C_y\\
+              C_o
+              \end{bmatrix}
+\end{equation}
+
+In standard notation, the model is expressed as
+\begin{equation}
+ \begin{aligned}
+ \frac{d C_y}{dt} &= I_{s_y} + I_{r_y} \frac{C_o}{0.5+C_o} - k_y C_y \\
+ \frac{d C_o}{dt} &= I_{s_o}+ I_{r_y} + h k_y C_y - k_o C_o\\
+ \end{aligned}
+\end{equation}
