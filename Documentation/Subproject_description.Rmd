@@ -97,12 +97,14 @@ We will build one single Bayesian model for each decomposition model, which will
 \begin{tikzpicture}
     \node[state] (1) {$\Theta_n$};
     \node[statedata] (2) [right =of 1, xshift=9cm] {$C(t)$};
-    \node[state] (b) [left  =of 1, xshift=-2cm] {$\beta$};
+
+    \node[state] (b) [left  =of 1, xshift=-2cm] {$\beta_k$};
  
    \node[statedata] (c) [above =of b, xshift=0cm] {$v_1, v_{...}, v_k$};
    
 
     \node[statedata] (2x) [below =of 2, xshift=0cm] {$C(t_0)$};
+    \node[statedata] (2xx) [below =of 2x, xshift=-2cm] {$\bar{I}$};
 
     \node[stateforce] (31) [above =of 1, xshift=2cm,yshift=2cm] {$\tau_1$};
     \node[stateforce] (32) [above =of 1, xshift=3cm,yshift=2cm] {$\tau_2$};
@@ -160,6 +162,7 @@ We will build one single Bayesian model for each decomposition model, which will
     \path (5x) edge node[el,below] {$\sum_{1}^{i} p(I_i) = 1$} (1);
 
     \path (6x) edge node[el,above] {} (2x);
+    \path (2xx) edge node[el,above] {} (2x);
 
     \path (53) edge node[el,above] {} (55x);
     \path (54) edge node[el,above] {} (55x);
