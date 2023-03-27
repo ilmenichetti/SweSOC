@@ -131,7 +131,7 @@ We will build one single Bayesian model for each decomposition model, which will
     %\node[stateforce] (55) [below =of 1,  xshift=4cm, yshift=-2cm] {$E_3$};
     \node[state] (55x) [below =of 1, xshift=2cm,yshift=-1cm] {$E$};
 
-    \node[statedata] (5k) [below =of 1, yshift=-4cm] {$M$};
+    \node[statedata] (5k) [below =of 1, yshift=-3.5cm] {$B$};
 
 
     \node[state] (6x) [below =of 1, xshift=5cm,yshift=-1cm] {$\Pi$};
@@ -206,6 +206,14 @@ All these charachteristics can appear independently from each other.
 
 
 # 5 Comparing models
+## Model Complexity
+Model complexity can be defined in various ways, and have very different meanings. 
+
+### Entropy based definitions
+
+### Graph/parameters based definitions
+
+
 
 
 # 6 Extrapolating national predictions from the ensemble
