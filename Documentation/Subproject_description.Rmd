@@ -182,6 +182,10 @@ We will build one single Bayesian model for each decomposition model, which will
 ```
 
 
+# 3 The dataset and the steady state assumption
+
+
+
 # 4 The models in detail
 The first step is defining what a specific model is.  
 Here we will consider a SOC decomposition model as a compartmental model where compartments are in general connected with mass fluxes and defined by a decomposition kinetic associated with each pool.  Fluxes can be in a cascade (mass has only one pathway through the pools) or in parallel (mass has more than one pathway through the pools).  
@@ -190,16 +194,67 @@ The models which can present or not one or more inert pools, which are just a sp
 Models can also present interactions between the pools, which makes them nonlinear. We define as linear a model which presents as variable (besides forcing variables) only the pool masses. A nonlinear model presents other variables, usually the kinetics but in some cases something else like the input partitioning, which also vary as a function of the pools.  
 All these charachteristics can appear independently from each other.  
 
+The linear models already implemented in SoilR as predefined function are:  
+
+* Century
+* RothC
+* Yasso
+* Yasso07
+* ICBM  
+
+Plus some more generic models, one of which we will also include in the comparison, in particular:   
+
+* ThreepFeedbackModel  
+  
+And the baseline, the simplest possible model:  
+
+* Olson's single pool model  
+  
+We will include in the comparison also models specifically developed for this study, in particular  
+
+* Porous  
+  
+We classify them based on their characheristics, considering:
+
+* Serial: the pools are all connected in a cascade, with one unique pathway for C molecules other than being respured
+* Parallel: some pools are defining parallel pathways for C molecules
+* Inert: the model assumes one proper "inert" pool, with some C molecules not reacting
+* Feedback: the model assumes some patways bacwards
+* Nonlinear: there are nonlinearities in the model
+
+```{r echo=FALSE}
+
+model_names<-c("Olson","ICBM", "Century", "Yasso", "Yasso07", "RothC", "Porous", "3PFeedback")
+
+venn_models<-mat.or.vec(length(model_names), 5)
+rownames(venn_models)<-model_names
+colnames(venn_models)<-c("Serial", "Parallel", "Inert", "Feedback", "Nonlinear")
+
+venn_models[1,]=c(1,0,0,0,0)
+venn_models[2,]=c(1,0,0,0,0)
+venn_models[3,]=c(0,1,0,0,0)
+venn_models[4,]=c(1,0,0,0,0)
+venn_models[5,]=c(1,0,0,0,0)
+venn_models[6,]=c(1,0,0,1,0)
+venn_models[6,]=c(1,0,0,0,1)
+venn_models[6,]=c(1,0,0,1,0)
+
+
+knitr::kable(venn_models)
+```
+
+
 
 ## 4.1 Linear models
 
-### 4.1.1 Cascade models
+### 4.1.1 Serial (Cascade) models
 
 ### 4.1.2 Parallel models
 
-### 4.1.3 Feedback models
+### 4.1.3 Models with inert pool
 
-### 4.1.4 Models with inert pool
+### 4.1.4 Feedback models
+
 
 
 ## 4.2 Nonlinear models
