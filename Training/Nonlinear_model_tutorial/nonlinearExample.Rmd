@@ -71,7 +71,7 @@ TwopoolNonlinearInput<-function(ky=0.8, ko=0.00605, h=0.13, Iy=1.1, Io=0.5){
       SoilR:::InFlux_by_PoolName(
         destinationName='Cy',
         func=function(t, Co){
-          Iy*(Co/(0.5*Co))
+          Iy
         }
       ),
       SoilR:::InFlux_by_PoolName(
