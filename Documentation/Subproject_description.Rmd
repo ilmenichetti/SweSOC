@@ -3,7 +3,6 @@ title: "Multi-model comparison"
 author: "Lorenzo Menichetti"
 date: "`r Sys.Date()`"
 output: pdf_document
-bibliography: ../../ZotBib.bib  
 ---
 
 ```{r setup, include=FALSE}
@@ -22,15 +21,14 @@ We will the utilize the ensemble for predictions, aggregated on a regional scale
 
 ## 1 Data consolidation
 
-## 2 Models
+## 2 Model comparison
 
 ## 2.1 Model description: similarities
 All models are possible to be written as:  
-\begin{equation}\label{eq:general}
-\frac{d\Gamma}{dt} = I + \xi \cdot A \cdot \Gamma(t), \Gamma(t=0)= \Gamma_0
-\end{equation} 
-
-Where $I$ is the inputs vector of lenght $n$, $\xi$ is the climate or edaphic scaling (either one scalar or a vector of length $n$), $A$ is the transfer matrix (square $n \times n$) and $\Gamma_0$ is the initialization vector of lenght $n$.  $\Gamma$ represents the total carbon $C$ measured, distributed across all the pools of the model.  
+\begin{equation}
+I + \xi \cdot A \cdot C(t)
+\end{equation}
+Where $I$ is the inputs vector of lenght $n$, $\xi$ is the climate or edaphic scaling (either one scalar or a vector of length $n$), $A$ is the transfer matrix (square $n \times n$) and $C$ is the initialization vector of lenght $n$.  
 All models are assumed as non-autonomous and have forcing variables.  
 Different models will mainly differ in:
 * size ($n$)
@@ -39,8 +37,7 @@ And in the ways they estimate their forcing variables:
 * in the way the estimate the inputs, usually variable over time
 * in the way they estimate the climatic scaling, also variable over time  
 All these differences will interact with each other. In order to test for the differences in model structures ($n$ and $A$) without depending on the forcing variable estimation approaches, we will implement the latter into the Bayesian probabilistic model for calibration. 
-The term $\xi$ can be decomposed into separate temperature $\tau$ and moisture $\psi$ effects.  
-
+The term $\xi$ can be decomposed into separate temperature $\tau$ and moisture $\psi$ effects.
 
 ### 2.1.2 The reduction functions $\tau$ and $\xi$
 These functions are all classifiable under the following three groups:  
@@ -62,32 +59,16 @@ plot(p, dbeta(p, 2, 2), type='l', xaxt="n", yaxt="n", ylab="", xlab="", col="blu
 
 
 ### 2.1.3 The input estimation functions
-Aboveground inputs are known.
-Belowground inputs are estimated based on total biomass yields. Ideally, belowground (roots) inputs tend to follow a linear relationship with aboveground [@bolinderApproachEstimatingNet2007] defined by one single coefficient, the shoot to root ration $S:R$ (so the relationship crosses the origin), $I=yields \cdot S:R$.
-One criticism to this approach is that plants can vary their allocation to belowground depending on their physiology, and it is possible that in more extreme treatments the relationship varies. We therefore considered as alternative method for input estimation a linear relationship including an intercept,  $I=\alpha_1 +yields  \cdot S:R$.
-
-### 2.1.3 The exudates estimation functions
-Root exudates are a relevant but also uncertain C input to the soil, and can be even more variable than root inputs. One possible way to estimate them is with a constant coefficient of total belowground inputs, as in [@bolinderApproachEstimatingNet2007]: $E=I \cdot 0.65$. The original value $0.65$ will be anyway considered uncertain.  
-But in order to include the uncertainty of the estimation approach itself, we consider in our models also the alternative of including an intercept: $E= \alpha_2 + I \cdot 0.65$
-
-# 3 The Bayesian testing framework
 
 
-## 3.1 Including model initialization in the calibration
-Every model will need initial C values at the beginning of each simulation. Getting these values (usually called "initialization") will be done by including a solved (analytically or, in case of nonlinear models, numerically by running a spin-up) steady state version of the model into the Bayesian model. This means that the vector $\Gamma_0$ in Equation \ref{eq:general} is given by the vector of proportions (of length $n$) multiplied by the scalar representing the measurement of total C at time 0 $\Pi \cdot C_{t_0}$.  
+## 2.2 Bayesian testing framework
+We will build one single Bayesian model for each decomposition model, which will include all the possible combinations of forcing variables. The graph of the probability model is represented below, where $\Theta$ represents the SOC decomposition model:  
 
-## 3.2 Including different amendments in the calibration
-Each model includes one or more transfer terms between the first and the second pool. These terms, which are model parameters, are specific to different amendments.
-
-## 3.3 The Bayesian model
-We will build one single Bayesian model for each decomposition model, which will include all the possible combinations of forcing variables in subsequente hyerarchical levels. The graph of the probability model is represented below, where $\Theta$ represents the SOC decomposition model:  
-
-```{tikz, echo=FALSE, fig.cap = "The core graph of the Bayesian model for each SOC decomposition model. Orange = data, pink = multiple choiches, teal = standard node", fig.ext = 'png'}
+```{tikz, echo=FALSE, fig.cap = "The core graph of the Bayesian model for each SOC decomposition model", fig.ext = 'png'}
 \usetikzlibrary{shapes,decorations,arrows,calc,arrows.meta,fit,positioning}
 \tikzset{
     -Latex,auto,node distance =1 cm and 1 cm,semithick,
     state/.style ={ellipse, draw, minimum width = 0.7 cm,fill=teal!60},
-    stateforce/.style ={ellipse, draw, minimum width = 0.7 cm,fill=pink!60},
     statedata/.style ={ellipse, draw, minimum width = 0.7 cm,fill=orange!60},
     statemin/.style ={ellipse, draw, minimum width = 0 cm},
     point/.style = {circle, draw, inner sep=0.04cm,fill,node contents={}},
@@ -95,183 +76,90 @@ We will build one single Bayesian model for each decomposition model, which will
     el/.style = {inner sep=2pt, align=left, sloped}
 }
 \begin{tikzpicture}
-    \node[state] (1) {$\Theta_n$};
-    \node[statedata] (2) [right =of 1, xshift=9cm] {$C(t)$};
+    \node[state] (1) {$\Theta$};
+    \node[statedata] (2) [right =of 1, xshift=9cm] {$Data$};
+    \node[state] (31) [above =of 1, xshift=2cm,yshift=2cm] {$\tau_1$};
+    \node[state] (32) [above =of 1, xshift=3cm,yshift=2cm] {$\tau_2$};
+    \node[state] (33) [above =of 1, xshift=4cm,yshift=2cm] {$\tau_3$};
+    \node[statemin] (3x) [above =of 1, xshift=2cm,yshift=1cm] {};
 
-    \node[state] (b) [left  =of 1, xshift=-2cm] {$\beta_k$};
- 
-   \node[statedata] (c) [above =of b, xshift=0cm] {$v_1, v_{...}, v_k$};
-   
+    \node[state] (41) [above =of 1,  xshift=-2cm,yshift=2cm] {$\psi_1$};
+    \node[state] (42) [above =of 1,  xshift=-3cm,yshift=2cm] {$\psi_2$};
+    \node[state] (43) [above =of 1,  xshift=-4cm,yshift=2cm] {$\psi_3$};
+    \node[statemin] (4x) [above =of 1, xshift=-2cm,yshift=1cm] {};
 
-    \node[statedata] (2x) [below =of 2, xshift=0cm] {$C(t_0)$};
-    \node[statedata] (2xx) [below =of 2x, xshift=-2cm] {$\bar{I}$};
+    \node[state] (51) [below =of 1, xshift=-2cm, yshift=-2cm] {$I_1$};
+    \node[state] (52) [below =of 1, xshift=-3cm, yshift=-2cm] {$I_2$};
+    \node[statemin] (5x) [below =of 1, xshift=-2cm,yshift=-1cm] {};
 
-    \node[stateforce] (31) [above =of 1, xshift=2cm,yshift=2cm] {$\tau_1$};
-    \node[stateforce] (32) [above =of 1, xshift=3cm,yshift=2cm] {$\tau_2$};
-    \node[stateforce] (33) [above =of 1, xshift=4cm,yshift=2cm] {$\tau_3$};
-    \node[state] (3x) [above =of 1, xshift=2cm,yshift=1cm] {$\tau$};
-
-    \node[statedata] (3k) [above =of 32, xshift=0cm] {$T$};
-
-
-    \node[stateforce] (41) [above =of 1,  xshift=-2cm,yshift=2cm] {$\psi_1$};
-    \node[stateforce] (42) [above =of 1,  xshift=-3cm,yshift=2cm] {$\psi_2$};
-    \node[stateforce] (43) [above =of 1,  xshift=-4cm,yshift=2cm] {$\psi_3$};
-    \node[state] (4x) [above =of 1, xshift=-2cm,yshift=1cm] {$\psi$};
-
-    \node[statedata] (4k) [above =of 42, xshift=0cm] {$M$};
-
-
-    \node[stateforce] (51) [below =of 1, xshift=-2cm, yshift=-2cm] {$I_1$};
-    \node[stateforce] (52) [below =of 1, xshift=-3cm, yshift=-2cm] {$I_2$};
-    \node[state] (5x) [below =of 1, xshift=-2cm,yshift=-1cm] {$I$};
-
-    \node[stateforce] (53) [below =of 1,  xshift=2cm, yshift=-2cm] {$E_1$};
-    \node[stateforce] (54) [below =of 1,  xshift=3cm, yshift=-2cm] {$E_2$};
-    %\node[stateforce] (55) [below =of 1,  xshift=4cm, yshift=-2cm] {$E_3$};
-    \node[state] (55x) [below =of 1, xshift=2cm,yshift=-1cm] {$E$};
-
-    \node[statedata] (5k) [below =of 1, yshift=-3.5cm] {$B$};
-
-
-    \node[state] (6x) [below =of 1, xshift=5cm,yshift=-1cm] {$\Pi$};
+    \node[state] (53) [below =of 1,  xshift=2cm, yshift=-2cm] {$E_1$};
+    \node[state] (54) [below =of 1,  xshift=3cm, yshift=-2cm] {$E_2$};
+    \node[state] (55) [below =of 1,  xshift=4cm, yshift=-2cm] {$E_3$};
+    \node[statemin] (55x) [below =of 1, xshift=2cm,yshift=-1cm] {};
 
     \path (1) edge node[above] {$p(\Theta  \mid \sum_{1}^{i} p(\tau_i) = 1, \sum_{1}^{i} p(\psi_i) = 1, \sum_{1}^{i} p(I_i) =1, \sum_{1}^{i} p(E_i)) =1 $} (2);
-    \path [dashed] (1) edge node[el, above] {(steady state model version)} (2x);
-    \path [dashed] (b) edge node[el, above] {(additional forcing)} (1);
 
     \path (31) edge node[el,above] {} (3x);
     \path (32) edge node[el,above] {} (3x);
     \path (33) edge node[el,above] {} (3x);
     \path (3x) edge node[el,below, rotate=180] {$\sum_{1}^{i} p(\tau_i) = 1$} (1);
-    \path (3k) edge node[el,above] {} (31);
-    \path (3k) edge node[el,above] {} (32);
-    \path (3k) edge node[el,above] {} (33);
-
-
     \path (41) edge node[el,above] {} (4x);
     \path (42) edge node[el,above] {} (4x);
     \path (43) edge node[el,above] {} (4x);
     \path (4x) edge node[el,below] {$\sum_{1}^{i} p(\psi_i) = 1$} (1);
-    \path (4k) edge node[el,above] {} (41);
-    \path (4k) edge node[el,above] {} (42);
-    \path (4k) edge node[el,above] {} (43);
 
     \path (51) edge node[el,above] {} (5x);
     \path (52) edge node[el,above] {} (5x);
     \path (5x) edge node[el,below] {$\sum_{1}^{i} p(I_i) = 1$} (1);
 
-    \path (6x) edge node[el,above] {} (2x);
-    \path (2xx) edge node[el,above] {} (2x);
-
     \path (53) edge node[el,above] {} (55x);
     \path (54) edge node[el,above] {} (55x);
-    %\path (55) edge node[el,above] {} (55x);
+    \path (55) edge node[el,above] {} (55x);
     \path (55x) edge node[el,below, rotate=180] {$\sum_{1}^{i} p(e_i) = 1$} (1);
-    \path (5k) edge node[el,above] {} (51);
-    \path (5k) edge node[el,above] {} (52);
-    \path (5k) edge node[el,above] {} (53);
-    \path (5k) edge node[el,above] {} (54);
-    %\path (5k) edge node[el,above] {} (55);
-
-    \path (c) edge node[el,above] {} (b);
-
 
 \end{tikzpicture}
 
 ```
 
 
-# 3 The dataset and the steady state assumption
 
-
-
-# 4 The models in detail
+## 3 The models
 The first step is defining what a specific model is.  
-Here we will consider a SOC decomposition model as a compartmental model where compartments are in general connected with mass fluxes and defined by a decomposition kinetic associated with each pool.  Fluxes can be in a cascade (mass has only one pathway through the pools) or in parallel (mass has more than one pathway through the pools).  
-Models can have feedbacks, with which we define only mass feedbacks (and not feedback mechanisms on the kinetics or transfers), so only fluxes going backwards.  
-The models which can present or not one or more inert pools, which are just a special case of pool with kinetic zero (and therefore present the peculiarity of simulate over time for SOC an asymptote translated above zero).  
-Models can also present interactions between the pools, which makes them nonlinear. We define as linear a model which presents as variable (besides forcing variables) only the pool masses. A nonlinear model presents other variables, usually the kinetics but in some cases something else like the input partitioning, which also vary as a function of the pools.  
-All these charachteristics can appear independently from each other.  
+Here we will consider a SOC decomposition model as a compartmental model where compartments are in general connected with a cascade of mass fluxes and defined by a decomposition kinetic associated with each pool. The models which can present or not one or more inert pools, which are just a special case of pool with kinetic zero (and therefore present the peculiarity of simulate over time for SOC an asymptote translated above zero).  
+Models can also present interactions between the pools, which makes them nonlinear. Here we define as linear a model which presents as variable only the pool masses. A nonlinear model presents other variables, usually the kinetics but in some cases something else like the input partitioning, which also vary as a function of the pools.
 
-The linear models already implemented in SoilR as predefined function are:  
+### 2.1 Linear models
 
-* Century
-* RothC
-* Yasso
-* Yasso07
-* ICBM  
+#### 2.1.1 Models with an inert pool
 
-Plus some more generic models, one of which we will also include in the comparison, in particular:   
-
-* ThreepFeedbackModel  
-  
-And the baseline, the simplest possible model:  
-
-* Olson's single pool model  
-  
-We will include in the comparison also models specifically developed for this study, in particular  
-
-* Porous  
-  
-We classify them based on their characheristics, considering:
-
-* Serial: the pools are all connected in a cascade, with one unique pathway for C molecules other than being respured
-* Parallel: some pools are defining parallel pathways for C molecules
-* Inert: the model assumes one proper "inert" pool, with some C molecules not reacting
-* Feedback: the model assumes some patways bacwards
-* Nonlinear: there are nonlinearities in the model
-
-```{r echo=FALSE}
-
-model_names<-c("Olson","ICBM", "Century", "Yasso", "Yasso07", "RothC", "Porous", "3PFeedback")
-
-venn_models<-mat.or.vec(length(model_names), 5)
-rownames(venn_models)<-model_names
-colnames(venn_models)<-c("Serial", "Parallel", "Inert", "Feedback", "Nonlinear")
-
-venn_models[1,]=c(1,0,0,0,0)
-venn_models[2,]=c(1,0,0,0,0)
-venn_models[3,]=c(0,1,0,0,0)
-venn_models[4,]=c(1,0,0,0,0)
-venn_models[5,]=c(1,0,0,0,0)
-venn_models[6,]=c(1,0,0,1,0)
-venn_models[6,]=c(1,0,0,0,1)
-venn_models[6,]=c(1,0,0,1,0)
+#### 2.1.1 Models with no inert pool
 
 
-knitr::kable(venn_models)
-```
+### 2.2 Nonlinear models
+
+### Autonomous and non autonomous models: the type of variance that they can describe
 
 
-
-## 4.1 Linear models
-
-### 4.1.1 Serial (Cascade) models
-
-### 4.1.2 Parallel models
-
-### 4.1.3 Models with inert pool
-
-### 4.1.4 Feedback models
+## 3 The climate scaling 
+Compartmental models in general use a scaling factor, combination of soil moisture and temperature effects, to scale the decomposition kinetics of each pool.  
+There are many different functions to express the impact of temperature and moisture on SOC decomposition, which can differ in their predictions. 
+Each decomposition model will be associated to its own climate scaling functions during the calibration of the ensemble. 
 
 
+## 4 Model calibration
 
-## 4.2 Nonlinear models
-
-
-# 5 Comparing models
-## Model Complexity
-Model complexity can be defined in various ways, and have very different meanings. 
-
-### Entropy based definitions
-
-### Graph/parameters based definitions
+### 4.1 Model initialization
 
 
+### 4.2 The climate scaling effects
+Since each model will be calibrated for all kinetic parameters, the original parameterization of each model will have no impact on the results. Model initialization will also have no impact, and therefore model performances will depend only on the decomposition model itself and on the climatic and edaphic scaling.  
+For what concerns linear models, structures are all pretty similar as described in section [2 The models] and all define a combination of the same shape when integrated over time (which is an exponential decomposition curve). The amount of pools in a model defines how many of such shapes are combined together, varying the shape of the total SOC predicted but not substantially over the short time scale where we have data. The biggest difference is caused by the presence of very slow or inert pools, and it can become visible over very long term time scales.  
+Over the relatively short (in terms of SOC kinetics) time scale of the measured data, the main differences in model fitness would therefore come from 
 
 
-# 6 Extrapolating national predictions from the ensemble
+## 4.2 Standardizing the input estimation
 
-## References
+## 5 Comparing models
+
+## 6 Extrapolating national predictions from the ensemble
 
