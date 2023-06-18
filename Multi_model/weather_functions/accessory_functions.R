@@ -21,12 +21,8 @@ poros <-
   function(sand, clay, SOC)
   { ... }
 
-poros<-function(sand, clay, SOC){
-
-  if(!missing(clay)){
-    porosity<-0.4115+0.0409*SOC-0.6089*clay*sand-0.0031*SOC^2*clay+0.2276*clay^3}else{
-      porosity<-0.3843+SOC*0.0448+SOC*sand*-0.0204
-    }
+poros<-function(SOC, clay){
+    porosity<- 0.3697 + clay + 0.0403 * SOC -0.0098 * clay * SOC
   #K?tterer et al 2006
   return(porosity)
 }
